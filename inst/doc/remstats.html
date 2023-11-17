@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>remstats</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">remstats</h1>
+
+
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(remstats)</span></code></pre></div>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>Relational event modeling approaches enable researchers to
+investigate both exogenous and endogenous factors influencing the
+evolution of a time-ordered sequence of relational events - commonly
+known as a <em>relational event history</em>. These models are
+categorized into <em>tie-oriented models</em>, where the probability of
+a dyad interacting next is modeled in a single step (e.g., see Butts,
+2008), and <em>actor-oriented models</em>, which first model the
+probability of a sender initiating an interaction and subsequently the
+probability of the senders’ choice of receiver (e.g., see Stadtfeld
+&amp; Block, 2017). The <code>R</code> package <code>remstats</code> is
+designed to compute a variety of statistics for both types of
+models.</p>
+<p>The <code>remstats</code> package is part of a bundle of
+<code>R</code>-packages developed by researchers from Tilburg University
+intended to aid applied researchers in the application of relational
+event modeling. For preparing the relational event history,
+<code>remstats</code> assumes the prior application of
+<code>remify::remify()</code> (available on CRAN). Model estimation can
+subsequently be executed using <code>remstimate</code> (available on
+GitHub at github.com/TilburgNetworkGroup/remstimate).</p>
+<p>The following provides a brief introduction to computing statistics
+for relational event history data with remstats. We’ll begin with a
+quick workflow example, followed by a detailed description of the
+procedure for the tie-oriented model. Finally, we’ll provide an
+explanation of the procedure for the actor-oriented model.</p>
+</div>
+<div id="workflow-example" class="section level2">
+<h2>Workflow example</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Load data</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">data</span>(history)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="fu">data</span>(info)</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co"># Define effects</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>effects <span class="ot">&lt;-</span> <span class="er">~</span> <span class="dv">1</span> <span class="sc">+</span> <span class="fu">send</span>(<span class="st">&quot;extraversion&quot;</span>, info) <span class="sc">+</span> <span class="fu">inertia</span>()</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="co"># Prepare event history with the &#39;remify package&#39;</span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>rehObject <span class="ot">&lt;-</span> remify<span class="sc">::</span><span class="fu">remify</span>(<span class="at">edgelist =</span> history, <span class="at">model =</span> <span class="st">&quot;tie&quot;</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="co"># Compute statistics</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>statsObject <span class="ot">&lt;-</span> <span class="fu">remstats</span>(<span class="at">reh =</span> rehObject, <span class="at">tie_effects =</span> effects)</span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="co"># Estimate model parameters with the &#39;remstimate&#39; package</span></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a><span class="co"># fit &lt;- remstimate::remstimate(reh = rehObject, stats = statsObject,</span></span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="co">#   method = &quot;MLE&quot;, timing = &quot;interval&quot;)</span></span></code></pre></div>
+</div>
+<div id="getting-started" class="section level2">
+<h2>Getting started</h2>
+<div id="data" class="section level3">
+<h3>Data</h3>
+<p>Relational event history data describes a time-ordered series of
+interactions between actors in a network. Such interactions are referred
+to as <em>relational events</em>. A relational event minimally contains
+information on the time of the event and the actors that are involved in
+the event.</p>
+<p>As an illustration, we use the <code>history</code> data object in
+the <code>remstats</code> package. This data object is a randomly
+generated relational event history. A description of the simulated data
+can be accessed with <code>?history</code>. Here, we read that
+<code>history</code> is a small simulated relational event history with
+115 events. Besides information on the time and actors, for each event
+there is also information on the setting and an event weight. We can
+view the first six events with:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">head</span>(history)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co">#&gt;   time actor1 actor2 setting weight</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt; 1  238    105    113    work   1.33</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; 2  317    105    109    work   1.64</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt; 3  345    115    112    work   1.82</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt; 4  627    101    115  social   1.25</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt; 5  832    113    107  social   1.67</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt; 6  842    105    109    work   2.30</span></span></code></pre></div>
+<p>We prepare the relational event history for computation of statistics
+for the tie-oriented model with the <code>remify</code> function from
+the <code>remify</code> package. Whenever the weight variable is present
+in the <code>edgelist</code> supplied to <code>remify</code>, it assumes
+that we want to use these to weight the events in the computation of the
+statistics. In this example, we don’t want this, thus we set the weight
+to one for all events:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>history<span class="sc">$</span>weight <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>reh <span class="ot">&lt;-</span> remify<span class="sc">::</span><span class="fu">remify</span>(<span class="at">edgelist =</span> history, <span class="at">model =</span> <span class="st">&quot;tie&quot;</span>)</span></code></pre></div>
+<p>Besides the relational event history itself, relational event
+modeling often requires a second data object with exogenous information
+on the actors in the network. Information on the actors in the simulated
+data example in <code>remstats</code> is stored in the <code>info</code>
+object. A description of the <code>info</code> data can be accessed with
+<code>?info</code>. Here, we read that the <code>info</code> object
+stores for the 10 actors in the network information on their age, sex,
+extraversion and agreeableness score. Moreover, extraversion and
+agreeableness is measured multiple times during the observation period.
+The time variable tells us when the values change. We can view the
+attribute information for the first two actors with:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">head</span>(info)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co">#&gt;   name  time age sex extraversion agreeableness</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">#&gt; 1  101     0   0   0        -0.40         -0.14</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co">#&gt; 2  101  9432   0   0        -0.32         -0.26</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">#&gt; 3  101 18864   0   0        -0.53         -0.45</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">#&gt; 4  103     0   0   0        -0.13         -0.65</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt; 5  103  9432   0   0        -0.43         -0.44</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt; 6  103 18864   0   0        -0.13         -0.43</span></span></code></pre></div>
+</div>
+<div id="compute-statistics-for-the-tie-oriented-model" class="section level3">
+<h3>Compute statistics for the tie-oriented model</h3>
+<p>First, we compute statistics for modeling relational event history
+data with a tie-oriented model. The statistics that are requested need
+to be supplied to the <code>tie_effects</code> argument of
+<code>remstats()</code>, specified in an object of class
+<code>formula</code>. This specification should be in the form
+<code>~ terms</code>.</p>
+<p>An overview of the statistics that can be computed for the
+tie-oriented model is available using the <code>tie_effects()</code>
+function or its help documentation <code>?tie_effects</code>:</p>
+<p>In this illustration, we start with requesting only one statistic:
+the inertia statistic. Most statistics can be tailored to the user’s
+needs. For example, lets view the description for the
+<code>inertia</code> statistic using <code>?inertia</code>. Here, we can
+read that the inertia statistic computes for every timepoint <em>t</em>
+for every pair of actors <em>(i,j)</em> in the riskset the number of
+past events. With the <code>scaling</code> argument, one of the methods
+for scaling the statistic can be chosen. The <code>consider_type</code>
+argument is relevant when event types are in the dependent variable,
+which we do not consider in this example.</p>
+<p>In this illustration, we will standardize the inertia statistic. To
+request this statistic, we define the formula as follows:s</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>effects <span class="ot">&lt;-</span> <span class="er">~</span> <span class="fu">inertia</span>(<span class="at">scaling =</span> <span class="st">&quot;std&quot;</span>)</span></code></pre></div>
+<p>Now, we have everything we need to compute our first statistic:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>out <span class="ot">&lt;-</span> <span class="fu">remstats</span>(<span class="at">tie_effects =</span> effects, <span class="at">reh =</span> reh)</span></code></pre></div>
+<p>The <code>remstats()</code> function outputs a 3-dimensional array
+with statistics for the tie-oriented model. On the rows of this array
+are the timepoints, the columns refer to the potential events in the
+riskset and the slices refer to the different statistics:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">dim</span>(out)</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="co">#&gt; [1] 115  90   2</span></span></code></pre></div>
+<p>Our statistics object has 115 rows, corresponding to the 115 time
+points in the relational event history. It has 90 columns, corresponding
+to the 90 events in the riskset. The statistics object has two slices,
+that is because the baseline statistics is automatically computed when
+the timing of the events in the relational event history is exact
+(unless removed by specifying <code>-1</code> in the
+<code>effects</code> formula) and saved in the first slice. The
+<code>remstats()</code> procedure assumes that the timing of the events
+in the relational event history is exact and the full likelihood is used
+in the estimation, unless the argument <code>ordinal</code> in
+<code>remify::remify()</code> is set to <code>TRUE</code>.</p>
+<p>We can view the names of the statistics that are in the statistics
+object with:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>out</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="co">#&gt; Relational Event Network Statistics</span></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="co">#&gt; &gt; Model: tie-oriented</span></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="co">#&gt; &gt; Computation method: per time point</span></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="co">#&gt; &gt; Dimensions: 115 time points x 90 dyads x 2 statistics</span></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="co">#&gt; &gt; Statistics:</span></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co">#&gt;   &gt;&gt; 1: baseline</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co">#&gt;   &gt;&gt; 2: inertia</span></span></code></pre></div>
+<p>Here, we see that, indeed, a baseline and inertia statistic are
+computed.</p>
+<p>Since we did not request anything special for the riskset in
+<code>remify::remify()</code>, it consists of every directed pair of
+actors observed in the relational event history, which is 10*9 = 90
+pairs. These pairs are saved in the <code>riskset</code> attribute. We
+can ask for the first few lines of this riskset:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">attr</span>(out, <span class="st">&quot;riskset&quot;</span>))</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="co">#&gt;   sender receiver id</span></span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="co">#&gt; 1    101      103  1</span></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="co">#&gt; 2    101      104  2</span></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="co">#&gt; 3    101      105  3</span></span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a><span class="co">#&gt; 4    101      107  4</span></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a><span class="co">#&gt; 5    101      109  5</span></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a><span class="co">#&gt; 6    101      111  6</span></span></code></pre></div>
+<p>Here, we see that the first event in the riskset is the event were
+actor 101 sends an interaction directed towards actor 103. The id column
+refers to the column in the statistic object that contains the
+statistic(s) for this specific dyad. The first column in the statistic
+object refers to this first event in the riskset, the second column in
+the statistic object to the second event in the riskset, and so
+forth.</p>
+<p>Inertia is an example of an <em>endogenous</em> statistic: it is a
+function of the relational event history itself. Next, we are going to
+add a request for an <em>exogenous</em> statistic. For this we need the
+exogenous information on the actors in the <code>info</code> object.</p>
+<p>As an illustration, we are going to request the statistic for an
+effect of extraversion on sending events, i.e., a send effect. The
+description of a send effect is accessed with <code>?send</code>. Here,
+we read that we need to supply the variable for which we want to specify
+a sender effect and that this variable should correspond to a column in
+the <code>attr_actors</code> object that we supply. Thus, we specify a
+send effect of extraversion with
+<code>send(&quot;extraversion&quot;, attr_actors = info)</code>. Here, we specify
+the <code>attr_actors</code> object within the <code>send()</code>
+function. Alternatively, it can be supplied to <code>remstats()</code>.
+This is for example useful if you want to compute a bunch of exogenous
+statistics using the same <code>attr_actors</code> object.</p>
+<p>Statistics in the <code>effects</code> formula should be separated
+with the <code>+</code>. Finally, we add an interaction between the
+<code>inertia()</code> statistic and the <code>send()</code> statistic.
+This can be done by using the <code>*</code> or <code>:</code>
+operator:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>effects <span class="ot">&lt;-</span> <span class="er">~</span> <span class="fu">inertia</span>(<span class="at">scaling =</span> <span class="st">&quot;std&quot;</span>) <span class="sc">+</span> <span class="fu">send</span>(<span class="st">&quot;extraversion&quot;</span>, info) <span class="sc">+</span> </span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>    <span class="fu">inertia</span>(<span class="at">scaling =</span> <span class="st">&quot;std&quot;</span>)<span class="sc">:</span><span class="fu">send</span>(<span class="st">&quot;extraversion&quot;</span>, info) </span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>out <span class="ot">&lt;-</span> <span class="fu">remstats</span>(<span class="at">tie_effects =</span> effects, <span class="at">reh =</span> reh)</span></code></pre></div>
+</div>
+<div id="compute-statistics-for-the-actor-oriented-model" class="section level3">
+<h3>Compute statistics for the actor-oriented model</h3>
+<p>The procedure to compute statistics for the actor-oriented model is
+largely similar to what is written above, except that statistics have to
+be specified separately for the sender activity rate step of the model
+and the receiver choice step of the model. The statistics requested for
+these two modeling steps need to be supplied to two different effects
+arguments, namely <code>sender_effects</code> and
+<code>receiver_effects</code>, respectively.</p>
+<p>An overview of the statistics that are available for the
+actor-oriented model in the two modeling steps can be obtained using the
+<code>actor_effects()</code> function or its help documentation
+<code>?actor_effects</code>.</p>
+<p>In this illustration, we start with requesting only one statistic for
+the sender activity rate step: the <em>outdegreeSender</em> statistic.
+First, lets view the description for the <code>outdegreeSender</code>
+statistic using <code>?outdegreeSender</code>. Here, we can read that,
+in the sender activity rate step of the actor-oriented model, the
+outdegreeSender statistic computes for every timepoint <em>t</em> for
+every actors <em>i</em> the number of outgoing past events. With the
+<code>scaling</code> argument, one of the methods for scaling the
+statistic can be chosen.</p>
+<p>First, we prepare the event history for computing statistics for an
+actor-oriented model:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>reh <span class="ot">&lt;-</span> remify<span class="sc">::</span><span class="fu">remify</span>(<span class="at">edgelist =</span> history, <span class="at">model =</span> <span class="st">&quot;actor&quot;</span>)</span></code></pre></div>
+<p>To compute the outdegreeSender statistic for the sender activity rate
+step we supply it to the <code>sender_effects</code> argument of
+<code>remstats()</code>:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>effects <span class="ot">&lt;-</span> <span class="er">~</span> <span class="fu">outdegreeSender</span>()</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>out <span class="ot">&lt;-</span> <span class="fu">remstats</span>(<span class="at">sender_effects =</span> effects, <span class="at">reh =</span> reh)</span></code></pre></div>
+<p>The outputted remstats object is now a list with two elements:
+<code>sender_stats</code> and <code>receiver_stats</code>:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">names</span>(out)</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="co">#&gt; [1] &quot;sender_stats&quot;   &quot;receiver_stats&quot;</span></span></code></pre></div>
+<p>Since we did not request any statistics for the receiver choice step
+here, the <code>receiver_stats</code> object is empty. The
+<code>sender_stats</code> object contains the statistic array with the
+<code>baseline</code> statistic (again, automatically computed unless
+<code>ordinal = TRUE</code>), and the requested
+<code>outdegreeSender</code> statistic:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>out</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="co">#&gt; Relational Event Network Statistics</span></span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="co">#&gt; &gt; Model: actor-oriented</span></span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="co">#&gt; &gt; Computation method: per time point</span></span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a><span class="co">#&gt; &gt; Sender model:</span></span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a><span class="co">#&gt;   &gt;&gt; Dimensions: 115 time points x 10 actors x 2 statistics</span></span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a><span class="co">#&gt;   &gt;&gt; Statistics:</span></span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a><span class="co">#&gt;       &gt;&gt;&gt; 1: baseline</span></span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a><span class="co">#&gt;       &gt;&gt;&gt; 2: outdegreeSender</span></span></code></pre></div>
+<p>The dimension of <code>out$sender_stats</code> is 115 x 10 x 2. On
+the rows we have the timepoints, the columns refer to the actors that
+can be senders and the slices refer to the different statistics.</p>
+<p>Lets extend our model and also request a statistic for the receiver
+choice step:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>sender_effects <span class="ot">&lt;-</span> <span class="er">~</span> <span class="fu">outdegreeSender</span>()</span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>receiver_effects <span class="ot">&lt;-</span> <span class="er">~</span> <span class="fu">inertia</span>()</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>out <span class="ot">&lt;-</span> <span class="fu">remstats</span>(<span class="at">sender_effects =</span> sender_effects, <span class="at">receiver_effects =</span> receiver_effects, <span class="at">reh =</span> reh)</span></code></pre></div>
+<p>We can access the statistic computed for the receiver choice step
+with <code>out$receiver_stats</code>. In this step, the baseline
+statistic is not automatically computed (and not defined). Hence, the
+dimensions of the statistics object for the receiver choice step are 115
+x 10 x 1. On the rows we have again the timepoints, on the columns now
+the receivers and on the slices the statistics.</p>
+<p>Note that the computed values of the statistic in the receiver choice
+step are equal to the values for this receiver, given the current
+sender. For example, lets review the first six lines:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="co"># Set the column names equal to the receivers</span></span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a><span class="fu">colnames</span>(out<span class="sc">$</span>receiver_stats) <span class="ot">&lt;-</span> <span class="fu">attributes</span>(reh)<span class="sc">$</span>dictionary<span class="sc">$</span>actors<span class="sc">$</span>actorName</span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a><span class="co"># Set the rownames equal to the senders</span></span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a><span class="fu">rownames</span>(out<span class="sc">$</span>receiver_stats) <span class="ot">&lt;-</span> reh<span class="sc">$</span>edgelist<span class="sc">$</span>actor1</span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a><span class="co"># View the first six lines</span></span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a><span class="fu">head</span>(out<span class="sc">$</span>receiver_stats[,,<span class="st">&quot;inertia&quot;</span>])</span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a><span class="co">#&gt;     101 103 104 105 107 109 111 112 113 115</span></span>
+<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a><span class="co">#&gt; 105   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a><span class="co">#&gt; 105   0   0   0   0   0   0   0   0   1   0</span></span>
+<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a><span class="co">#&gt; 115   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a><span class="co">#&gt; 101   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a><span class="co">#&gt; 113   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb17-13"><a href="#cb17-13" tabindex="-1"></a><span class="co">#&gt; 105   0   0   0   0   0   1   0   0   1   0</span></span></code></pre></div>
+<p>At the first timepoint, the inertia statistic for all receivers given
+the current sender (actor 105) is zero because no prior events have
+occurred. At the second timepoint, the sender is again actor 105. Now
+the inertia statistic is equal to the 1 for the receiver of the first
+event (actor 113). At the third timepoint, the inertia statistic is
+again zero for all receivers because now the sending actor is 115, who
+did not send any prior events.</p>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
