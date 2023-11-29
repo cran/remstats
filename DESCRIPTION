@@ -1,8 +1,8 @@
 Package: remstats
 Type: Package
 Title: Computes Statistics for Relational Event History Data
-Version: 3.2.0
-Date: 2023-11-15
+Version: 3.2.1
+Date: 2023-11-29
 Authors@R: 
     c(
         person(
@@ -60,7 +60,7 @@ LinkingTo: Rcpp, RcppArmadillo, RcppProgress
 Suggests: graphics, tinytest, remify (>= 3.2.0), knitr, rmarkdown
 VignetteBuilder: knitr
 NeedsCompilation: yes
-Packaged: 2023-11-17 10:24:09 UTC; mlbosman
+Packaged: 2023-11-29 12:17:33 UTC; mlbosman
 Author: Marlyne Meijerink-Bosman [aut, cre],
   Giuseppe Arena [ctb],
   Diana Karimova [ctb],
@@ -70,4 +70,4 @@ Author: Marlyne Meijerink-Bosman [aut, cre],
   Roger Leenders [ctb],
   Joris Mulder [ctb]
 Repository: CRAN
-Date/Publication: 2023-11-17 19:50:10 UTC
+Date/Publication: 2023-11-29 12:40:02 UTC
