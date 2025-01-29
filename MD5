@@ -1,5 +1,5 @@
-a32b7ab1e8eed2a0648243e5ff06b19e *DESCRIPTION
-b192db65b995e1cf8d66fd9e2176aa0d *LICENSE
+5e4cb52a39599c754600812bbc9d199b *DESCRIPTION
+0305951d30df6a9d8bb24a441d13af69 *LICENSE
 24b7fbbdee5947c60809863af9fa3750 *NAMESPACE
 eafc1e86fefe04648defc4ac8607957f *R/RcppExports.R
 af51cb6894aaf8dc05516b78d9dd245f *R/actor_effects.R
@@ -14,15 +14,15 @@ e6d77184ac7b9cbbf22f2c4e5b09dd2b *R/helpers.R
 bd21e63d721ffd7d82c15ba903dc8df6 *R/remstats.R
 630440e85a3979d49eef35ca3f3f4f89 *R/tie_effects.R
 d468748f6ed46f486da4f7f9a36faefd *R/tomstats.R
-20c8d3f97d93e2e318a22508275b5a02 *build/partial.rdb
-4c6978b36a493d91481070e65ed0f4d4 *build/vignette.rds
+76161b65639451c966be75488458b3c3 *build/partial.rdb
+7fd0c8e9ad42ebc81f8dd80670e060d6 *build/vignette.rds
 9a4ad22ec9e4b54e58419ee261c610d4 *data/both_male_long.rda
 45cf7f5b7fe8784674dd35c38f0717ea *data/both_male_wide.rda
 f077c846c30bc796a7cd35824330aeb8 *data/history.rda
 0ec1a1f0e0069ad6609ec6838edfd610 *data/info.rda
 fa0f100e87558d1060efa4239b458d8a *inst/doc/remstats.R
 f8fee25ea3bd3cf27b50a347f4b85cfc *inst/doc/remstats.Rmd
-516433bd95203f88644850c16847e050 *inst/doc/remstats.html
+bb77c53eb44a78e03437f9655a7eade2 *inst/doc/remstats.html
 e8d4822a1de61f7d68b69fe53b52fa0f *inst/include/remstats.h
 aaaf6997a6eeb91537867ab47a22200a *inst/include/remstats_RcppExports.h
 707deaa83d9c9af00077e32251c2cf3a *inst/tinytest/test-bind-remstats.R
