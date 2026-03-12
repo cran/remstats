@@ -1,5 +1,5 @@
-5e4cb52a39599c754600812bbc9d199b *DESCRIPTION
-0305951d30df6a9d8bb24a441d13af69 *LICENSE
+5e3cc6068ce1e24cbe5ae4b347d2490a *DESCRIPTION
+48b4fab356c82dd231117b2816777bd1 *LICENSE
 24b7fbbdee5947c60809863af9fa3750 *NAMESPACE
 eafc1e86fefe04648defc4ac8607957f *R/RcppExports.R
 af51cb6894aaf8dc05516b78d9dd245f *R/actor_effects.R
@@ -14,8 +14,8 @@ e6d77184ac7b9cbbf22f2c4e5b09dd2b *R/helpers.R
 bd21e63d721ffd7d82c15ba903dc8df6 *R/remstats.R
 630440e85a3979d49eef35ca3f3f4f89 *R/tie_effects.R
 d468748f6ed46f486da4f7f9a36faefd *R/tomstats.R
-76161b65639451c966be75488458b3c3 *build/partial.rdb
-7fd0c8e9ad42ebc81f8dd80670e060d6 *build/vignette.rds
+76e123f5dcc8dee07678412adc0a2a84 *build/partial.rdb
+d8d11c87086cb46746a39dc661a58ca8 *build/vignette.rds
 9a4ad22ec9e4b54e58419ee261c610d4 *data/both_male_long.rda
 45cf7f5b7fe8784674dd35c38f0717ea *data/both_male_wide.rda
 f077c846c30bc796a7cd35824330aeb8 *data/history.rda
@@ -109,7 +109,7 @@ cbdb759e753475b3d5b80bd230a6512c *man/tomstats.Rd
 55ac1a4941ab6456d4a1e12f81f65eaa *man/userStat.Rd
 3161bd40b57c5d54ab11e18bf0db740a *src/Makevars
 3161bd40b57c5d54ab11e18bf0db740a *src/Makevars.win
-8dbb04dc61ef1b493a6b7d5f104d8b1b *src/RcppExports.cpp
+f3d9f6c11764f685da79df5f7b367382 *src/RcppExports.cpp
 f59e7c90d88b349a7406111050349c1c *src/aomstats.cpp
 720bd1e675d84049710f431953dc5582 *src/tomstats.cpp
 691b4eb98840e95ff320bc1a07116eaf *src/utils.cpp
