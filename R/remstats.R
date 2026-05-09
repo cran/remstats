@@ -126,30 +126,28 @@
 #' actors (see Details).
 #' @param attr_dyads optionally, an object of class \code{data.frame} or 
 #' \code{matrix} containing attribute information for dyads (see Details).
-#' @param method Specifies the method for managing simultaneous events, i.e., 
-#' events occurring at the same time. The default 'method' is 'pt' (per 
-#' timepoint), where statistics are computed once for each unique timepoint in 
-#' the edgelist. Alternatively, you can choose 'pe' (per event), where 
-#' statistics are computed once for each unique event observed in the edgelist.
 #' @param memory The memory to be used. See `Details'.
-#' @param memory_value Numeric value indicating the memory parameter. See
-#' `Details'.
+#' @param memory_value Numeric value indicating the memory parameter. Default 
+#' is \code{NA}, which is only valid for \code{memory = "full"} (no memory
+#' parameter required). See `Details'.
 #' @param start an optional integer value, specifying the index of the first
 #' time or event in the relational event history for which statistics must be 
-#' computed (see 'Details')
+#' computed (see 'Details'). Default is \code{2}: the first event has no history and is used only to initialize statistics, not to fit the model.
 #' @param stop an optional integer value, specifying the index of the last
 #' time or event in the relational event history for which statistics must be 
 #' computed (see 'Details')
+#' @param sampling Logical. If \code{TRUE}, statistics are computed using
+#'   case–control (dyad) sampling rather than the full risk set. Default \code{FALSE}.
+#'   Only supported for a \code{tie} model.
+#' @param samp_num Integer. Number of dyads to include per event when
+#'   \code{sampling = TRUE}. Must be smaller than or equal to the size of the
+#'   active risk set. Ignored when \code{sampling = FALSE}.
+#'   Only supported for a \code{tie} model.
 #' @param display_progress should a progress bar for the computation of the
 #' endogenous statistics be shown (TRUE) or not (FALSE)?
-#' @param adjmat optionally, for a tie-oriented model a previously computed 
-#' adjacency matrix with on the rows the time points and on the columns the 
-#' risk set entries
-#' @param get_adjmat for a tie-oriented model, whether the adjmat computed by 
-#' remstats should be outputted as an attribute of the statistics.
-#' @param attr_data deprecated, please use "attr_actors" instead
-#' @param attributes deprecated, please use "attr_data" instead
-#' @param edgelist deprecated, please use "reh" instead
+#' @param seed Optional integer. Random seed used for dyad sampling. Setting
+#'   this ensures reproducible sampling across calls. If \code{NULL}, the
+#'   current RNG state is used.
 #'
 #' @return An object of class 'remstats'. In case of the 
 #' tie-oriented model, an array with the computed statistics, where rows refer 
@@ -158,8 +156,11 @@
 #' actor-oriented model, list with in the first element the statistics for the 
 #' sender activity rate step and in the second element the statistics for the 
 #' receiver choice step, where rows refer to time points, columns refer to 
-#' potential senders or receivers, respectively. The 'remstats' object has the 
-#' following attributes: 
+#' potential senders or receivers, respectively. Statistics are computed once
+#' per unique time point (per-timepoint "pt" method), so the number of rows in
+#' the output equals \code{reh$M} (the number of  unique time points), which may
+#' be less than the total number of observed events when simultaneous events
+#' are present. The 'remstats' object has the following attributes: 
 #'   \describe{
 #'     \item{\code{model}}{Type of model that is estimated, obtained from the 
 #'      remify object inputted to 'reh'.}
@@ -171,9 +172,6 @@
 #'     \item{\code{actors}}{For the actor-oriented model, the set of actors 
 #'      used to construct the statistics, obtained from the remify object 
 #'      inputted to 'reh'.}
-#'     \item{\code{adjmat}}{[Optional], for the tie-oriented model, if 
-#'      "get_adjmat = TRUE", the matrix with the accumulated event weights for 
-#'      each time point (on the rows) and each dyad (in the columns).}
 #'   }
 #'
 #' @examples
@@ -208,28 +206,15 @@ remstats <- function(
     receiver_effects = NULL, 
     attr_actors = NULL, 
     attr_dyads = NULL, 
-    method = c("pt", "pe"),
     memory = c("full", "window", "decay", "interval"),
     memory_value = NA, 
-    start = 1, 
+    start = 2, 
     stop = Inf,
     display_progress = FALSE,
-    adjmat = NULL, 
-    get_adjmat = FALSE,
-    attr_data, 
-    attributes, 
-    edgelist
+    sampling = FALSE,
+    samp_num = NULL,
+    seed = NULL
 ) {
-
-    # Check if the deprecated argument "attributes" is used
-    if (!missing(attributes)) {
-            warning("Deprecated argument: Use 'attr_actors' instead of 'attributes'")
-            attr_actors <- attributes
-    }
-    if (!missing(attr_data)) {
-            warning("Deprecated argument: Use 'attr_actors' instead of 'attr_data'")
-            attr_actors <- attr_data
-    }
 
     # Check if the deprecated "id" column is used in attr_actors
     if (!is.null(attr_actors)) {
@@ -239,42 +224,35 @@ remstats <- function(
         }
     }
 
-    # Check if the deprecated argument "edgelist" is used
-    if (!missing(edgelist)) {
-            warning("Deprecated argument: Use 'reh' instead of 'edgelist'")
-            reh <- edgelist
-    }
-
     # Check the reh
     if (!("remify" %in% class(reh))) {
         stop("Expected a 'reh' object of class remify")
     }
 
-    if (attr(reh, "model") == "tie") {
-        out <- tomstats(
-            effects = tie_effects, 
-            reh = reh,
-            attr_actors = attr_actors, 
-            attr_dyads = attr_dyads, 
-            method = method, 
-            memory = memory, 
-            memory_value = memory_value, 
-            start = start, 
-            stop = stop, 
-            display_progress = display_progress, 
-            adjmat = adjmat, 
-            get_adjmat = get_adjmat
-        )
+    if (reh$meta$model == "tie") {
+    	out <- tomstats(
+    		effects = tie_effects, 
+    		reh = reh,
+    		attr_actors = attr_actors, 
+    		attr_dyads = attr_dyads, 
+    		memory = memory, 
+    		memory_value = memory_value, 
+    		start = start, 
+    		stop = stop, 
+    		display_progress = display_progress,
+    		sampling = sampling,
+    		samp_num = samp_num,
+    		seed = seed
+    	)
     }
 
-    if (attr(reh, "model") == "actor") {
+    if (reh$meta$model == "actor") {
         out <- aomstats(
             reh = reh, 
             sender_effects = sender_effects,
             receiver_effects = receiver_effects,
             attr_actors = attr_actors, 
             attr_dyads = attr_dyads, 
-            method = method,
             memory = memory, 
             memory_value = memory_value, 
             start = start, 
@@ -285,3 +263,4 @@ remstats <- function(
 
     out
 }
+

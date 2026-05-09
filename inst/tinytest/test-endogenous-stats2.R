@@ -12,7 +12,7 @@ reh <- remify::remify(edgelist, model = "tie", directed = FALSE,
   riskset = "active")
 effects <- ~ degreeDiff() + degreeMin() + degreeMax() + totaldegreeDyad() +
   inertia() + sp() + sp(unique = TRUE) + psABAB() + psABAY()
-stats <- remstats(reh, tie_effects = effects)
+stats <- remstats(reh, tie_effects = effects, start = 1)
 riskset <- attr(stats, "riskset")
 
 # baseline
@@ -165,7 +165,7 @@ std_effects <- ~
   degreeDiff(scaling = "std") + totaldegreeDyad(scaling = "std") +
   inertia(scaling = "std") + sp(scaling = "std") + 
   sp(scaling = "std", unique = TRUE)
-std_stats <- remstats(reh, tie_effects = std_effects)
+std_stats <- remstats(reh, tie_effects = std_effects, start = 1)
 
 sapply(2:dim(std_stats)[3], function(p) {
   stat_name <- dimnames(std_stats)[[3]][p]
@@ -177,12 +177,12 @@ sapply(2:dim(std_stats)[3], function(p) {
 
 # test proportional scaling
 prop_effects <- ~ inertia(scaling = "prop")
-expect_error(remstats(reh, tie_effects = prop_effects),
+expect_error(remstats(reh, tie_effects = prop_effects, start = 1),
   pattern = "not defined")
 
 prop_effects <- ~ degreeMin(scaling = "prop") + degreeMax(scaling = "prop") + 
   totaldegreeDyad(scaling = "prop") 
-prop_stats <- remstats(reh, tie_effects = prop_effects)
+prop_stats <- remstats(reh, tie_effects = prop_effects, start = 1)
 
 sapply(2:3, function(p) {
   stat_name <- dimnames(prop_stats)[[3]][p]
@@ -211,7 +211,7 @@ reh <- remify::remify(edgelist, model = "tie", directed = FALSE,
 effects <- ~ degreeMin() + sp() 
 
 # Method = "pt"
-pt_stats <- remstats(reh, tie_effects = effects)
+pt_stats <- remstats(reh, tie_effects = effects, start = 1)
 riskset <- attr(pt_stats, "riskset")
 
 # degreeMin
@@ -240,36 +240,4 @@ sp <- rbind(
 )
 expect_equal(pt_stats[, , "sp"], sp)
 
-# Method = "pe"
-pe_stats <- remstats(reh, tie_effects = effects, method = "pe")
-riskset <- attr(pe_stats, "riskset")
 
-# degreeMin
-degreeMin <- rbind(
-  matrix(0, ncol = nrow(riskset)),
-  c(0, 1, 0, 0, 0, 0),
-  c(1, 1, 0, 1, 0, 0),
-  c(1, 2, 0, 1, 0, 0),
-  c(2, 3, 0, 2, 0, 0),
-  c(3, 3, 0, 3, 0, 0),
-  c(3, 3, 1, 3, 1, 1),
-  c(4, 4, 1, 4, 1, 1),
-  c(4, 4, 1, 5, 1, 1),
-  c(4, 4, 2, 6, 2, 2)
-)
-expect_equal(pe_stats[, , "degreeMin"], degreeMin)
-
-# sp
-sp <- rbind(
-  matrix(0, ncol = nrow(riskset)),
-  c(0, 0, 0, 0, 0, 0),
-  c(0, 0, 0, 1, 0, 0),
-  c(0, 0, 0, 1, 0, 0),
-  c(1, 1, 0, 1, 0, 0),
-  c(2, 1, 0, 1, 0, 0),
-  c(2, 1, 1, 1, 1, 0),
-  c(2, 2, 1, 2, 1, 0),
-  c(2, 2, 1, 2, 1, 0),
-  c(2, 2, 2, 3, 1, 1)
-)
-expect_equal(pe_stats[, , "sp"], sp)

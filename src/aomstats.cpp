@@ -118,7 +118,7 @@ arma::vec update_decay_weights(double previous_time,
         arma::uword event = event_indices(j);
         double event_time = edgelist(event, 0);
         double event_weight = weights(event);
-        double decay_weight = event_weight * exp(-(previous_time - event_time) * (log(2) / mem_val)) * (log(2) / mem_val);
+        double decay_weight = event_weight * exp(-(previous_time - event_time) * (log(2) / mem_val)); //* (log(2) / mem_val);
 
         decay_weights(event) = decay_weight;
     }
@@ -1448,7 +1448,7 @@ void get_pshift(arma::mat &pshift,
     {
         arma::uword current_event = current_events(c);
         arma::uword next_sender = edgelist(current_event, 1);
-        int j = start + current_event;
+        int j = current_event - start;
 
         // Iterate over previous_events
         for (arma::uword p = 0; p < previous_events.n_elem; ++p)

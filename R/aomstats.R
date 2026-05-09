@@ -74,12 +74,19 @@
 #' the statistics for only the 5th event in the relational event sequence,
 #' based on the history that consists of events 1-4.
 #'
-#' @return An object of class 'aomstats'. List with in the first element the statistics for the sender activity rate step and in the second element the statistics for the receiver choice step. The 'aomstats' object has the 
-#' following attributes: 
+#' @return An object of class 'aomstats'. List with in the first element the
+#' statistics for the sender activity rate step and in the second element the
+#' statistics for the receiver choice step. Statistics are computed once per 
+#' unique time point (per-timepoint "pt" method), so the number of rows in the 
+#' output equals \code{reh$M} (the number of  unique time points), which may be 
+#' less than the total number of observed events when simultaneous events are 
+#' present. The 'aomstats' object has the following attributes: 
 #'   \describe{
 #'     \item{\code{model}}{Type of model that is estimated.}
-#'     \item{\code{formula}}{Model formula(s), obtained from the formula(s) inputted to 'sender_effects' and/or 'receiver_effects'.}
-#'     \item{\code{actors}}{The set of actors used to construct the statistics, obtained from the remify object inputted to 'reh'.}
+#'     \item{\code{formula}}{Model formula(s), obtained from the formula(s) 
+#'     inputted to 'sender_effects' and/or 'receiver_effects'.}
+#'     \item{\code{actors}}{The set of actors used to construct the statistics, 
+#'     obtained from the remify object inputted to 'reh'.}
 #'   }
 #'
 #' @examples
@@ -114,43 +121,28 @@ aomstats <- function(reh,
                      sender_effects = NULL,
                      receiver_effects = NULL,
                      attr_actors = NULL,
-                     attr_dyads = NULL, 
-                     method = c("pt", "pe"),
+                     attr_dyads = NULL,
                      memory = c("full", "window", "decay", "interval"),
-                     memory_value = Inf,
-                     start = 1,
+                     memory_value = NA,
+                     start = 2,
                      stop = Inf,
-                     display_progress = FALSE,
-                     attr_data, attributes, edgelist) {
+                     display_progress = FALSE) {
 
-  # Check if the deprecated argument "attributes" is used
-	if (!missing(attributes)) {
-    warning("Deprecated argument: Use 'attr_actors' instead of 'attributes'")
-    attr_actors <- attributes
-  }
-  if (!missing(attr_data)) {
-    warning("Deprecated argument: Use 'attr_actors' instead of 'attr_data'")
-    attr_actors <- attr_data
-  }
-  # Check if the deprecated argument "edgelist" is used
-  if (!missing(edgelist)) {
-    warning("Deprecated argument: Use 'reh' instead of 'edgelist'")
-    reh <- edgelist
-  }
-
+	method <- "pt"
+	
   # Validate remaining aomstats arguments
 	attr_actors <- validate_aomstats_arguments(attr_actors, reh)	
 
   # Prepare the edgelist
-  edgelist <- prepare_aomstats_edgelist(reh) 
+  edgelist <- prepare_aomstats_edgelist(reh)
 
-  # Prepare the network actors 
+  # Prepare the network actors
   actors <- prepare_aomstats_actors(reh)
 
   # Prepare event weights
   weights <- prepare_aomstats_event_weights(reh)
 
-  # Validate the memory argument 
+  # Validate the memory argument
   memory <- match.arg(memory)
   memory_value <- validate_memory(memory, memory_value)
   if (memory == "window") {
@@ -160,7 +152,16 @@ aomstats <- function(reh,
   }
 
   # Validate the method
-  method <- match.arg(method)
+  method <- "pt"
+  N_actors <- nrow(actors)
+
+  # Types info — needed for consider_type="separate" per effect
+  reh_norm  <- normalize_reh(reh)
+  with_type <- isTRUE(reh_norm$meta$with_type)
+  types_df  <- reh_norm$meta$dictionary$types  # data.frame: typeName, typeID
+  C         <- if (with_type && !is.null(types_df)) nrow(types_df) else 1L
+  # Per-event type IDs (1-based) — used when any effect has consider_type="separate"
+  event_type_ids <- if (with_type && C > 1L) unlist(reh_norm$ids$type) else NULL
 
   # Initialize stats
   sender_stats <- NULL
@@ -170,7 +171,7 @@ aomstats <- function(reh,
   sender_formula <- sender_effects
   if (!is.null(sender_formula)) {
     # Prepare sender_effects
-    temp <- prepare_sender_effects(sender_formula)
+    temp <- prepare_sender_effects(sender_formula, ordinal = reh$meta$ordinal)
     sender_effects <- temp$sender_effects
     sender_effects_names <- temp$sender_effects_names
     sender_interactions <- temp[[3]]
@@ -179,22 +180,42 @@ aomstats <- function(reh,
     subset <- prepare_subset(start, stop, edgelist, method, model = "sender")
 
     # Prepare sender covariate information
-    sender_covar <- prepare_sender_covariates(sender_effects, attr_actors, 
+    sender_covar <- prepare_sender_covariates(sender_effects, attr_actors,
       actors, edgelist, reh)
 
     # Prepare sender_effects scaling
-    sender_scaling <- prepare_aomstats_scaling(sender_effects, 
+    sender_scaling <- prepare_aomstats_scaling(sender_effects,
       sender_interactions)
 
-    # Compute the sender statistics
-    sender_stats <- compute_stats_sender(
-      sender_effects_names, edgelist, actors[, 2], weights, sender_covar,
-      sender_interactions, memory, memory_value, sender_scaling, subset$start, subset$stop, method, display_progress
-    )
+    # Extract consider_type per effect (default "ignore")
+    s_consider_type <- sapply(sender_effects, function(x) {
+      ct <- if ("consider_type" %in% names(x)) x$consider_type else "ignore"
+      if (!ct %in% c("ignore", "separate"))
+        stop("consider_type for sender effects must be 'ignore' or 'separate'")
+      ct
+    })
+    s_consider_type <- c(s_consider_type,
+      rep("ignore", sum(!sapply(sender_interactions, is.null))))
 
-    # Add variable names to the statistics dimnames
-    sender_stats <- add_variable_names(sender_stats, sender_effects_names, 
-      sender_effects, sender_interactions)
+    sender_stats <- compute_aomstats_with_type(
+      compute_fn     = function(eff_names, el, wts, s0, s1)
+        compute_stats_sender(eff_names, el, actors[, 2], wts, sender_covar,
+          sender_interactions, memory, memory_value, sender_scaling,
+          s0, s1, method, display_progress),
+      add_names_fn   = function(st) add_variable_names(st, sender_effects_names,
+                         sender_effects, sender_interactions),
+      edgelist       = edgelist,
+      weights        = weights,
+      event_type_ids = event_type_ids,
+      types_df       = types_df,
+      effects_names  = sender_effects_names,
+      consider_type  = s_consider_type,
+      with_type      = with_type,
+      C              = C,
+      subset_start   = subset$start,
+      subset_stop    = subset$stop,
+      N              = N_actors
+    )
   }
 
   # Receiver model ----------------------------------------------------------
@@ -207,26 +228,48 @@ aomstats <- function(reh,
     receiver_interactions <- temp$receiver_interactions
 
     # Prepare subset arguments
-    subset <- prepare_subset(start, stop, edgelist, method, model = "receiver")
+    subset <- prepare_subset(start, stop, edgelist, method, model = "sender") # if model is set to 'receiver' the dimension is based on number of events rather than time points.
 
     # Prepare receiver covariate information
-    receiver_covar <- prepare_receiver_covariates(receiver_effects, 
+    receiver_covar <- prepare_receiver_covariates(receiver_effects,
       attr_actors, attr_dyads, actors, edgelist, reh)
 
     # Prepare receiver_effects scaling
-    receiver_scaling <- prepare_aomstats_scaling(receiver_effects, 
+    receiver_scaling <- prepare_aomstats_scaling(receiver_effects,
       receiver_interactions)
 
-    # Compute the choice statistics
-    receiver_stats <- compute_stats_receiver(
-      receiver_effects_names, edgelist, actors[, 2], weights, receiver_covar,
-      receiver_interactions, memory, memory_value, receiver_scaling,
-      subset$start, subset$stop, method, display_progress
-    )
+    # Extract consider_type per effect (default "ignore")
+    r_consider_type <- sapply(receiver_effects, function(x) {
+      ct <- if ("consider_type" %in% names(x)) x$consider_type else "ignore"
+      # backward compatibility
+      if (isTRUE(ct))  ct <- "separate"
+      if (isFALSE(ct)) ct <- "ignore"
+      if (!ct %in% c("ignore", "separate"))
+        stop("consider_type for receiver effects must be 'ignore' or 'separate'")
+      ct
+    })
+    r_consider_type <- c(r_consider_type,
+      rep("ignore", sum(!sapply(receiver_interactions, is.null))))
 
-    # Add variable names to the statistics dimnames
-    receiver_stats <- add_variable_names(receiver_stats, 
-      receiver_effects_names, receiver_effects, receiver_interactions)
+    receiver_stats <- compute_aomstats_with_type(
+      compute_fn     = function(eff_names, el, wts, s0, s1)
+        compute_stats_receiver(eff_names, el, actors[, 2], wts, receiver_covar,
+          receiver_interactions, memory, memory_value, receiver_scaling,
+          s0, s1, method, display_progress),
+      add_names_fn   = function(st) add_variable_names(st, receiver_effects_names,
+                         receiver_effects, receiver_interactions),
+      edgelist       = edgelist,
+      weights        = weights,
+      event_type_ids = event_type_ids,
+      types_df       = types_df,
+      effects_names  = receiver_effects_names,
+      consider_type  = r_consider_type,
+      with_type      = with_type,
+      C              = C,
+      subset_start   = subset$start,
+      subset_stop    = subset$stop,
+      N              = N_actors
+    )
   }
 
   # Subset output
