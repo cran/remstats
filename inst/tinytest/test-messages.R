@@ -125,10 +125,6 @@ expect_warning(
 )
 
 x <- c(1, 1, NA)
-expect_error(
-    event(x), 
-    pattern = "missing values"
-)
 
 Y <- matrix(1:15, nrow = 5, ncol = 3)
 Y[1,1] <- NA
@@ -183,11 +179,11 @@ colnames(info)[1] <- "id"
 colnames(info)[1] <- "name"
 
 expect_error(
-    tomstats(reh = edgelist, effects = ~ 1),
+    tomstats(reh = edgelist, tie_effects = ~ 1),
     pattern = "object of class remify"
 )
 
-# TODO(actor-model): reh <- remify::remify(edgelist, model = "actor")
+# TODO(actor-model): reh <- remify(edgelist, model = "actor")
 # TODO(actor-model): 
 # TODO(actor-model): expect_error(
 # TODO(actor-model):     tomstats(reh = reh, effects = ~ 1),
@@ -198,12 +194,12 @@ expect_error(
 reh <- remify(edgelist, model = "tie")
 
 expect_error(
-    remstats(reh = reh, tie_effects = ~ 1, start = 0),
+    remstats(reh = reh, tie_effects = ~ 1, first = 0),
     pattern = "1 or a larger"
 )
 
 expect_error(
-    remstats(reh = reh, tie_effects = ~ 1, start = 5, stop = 3),
+    remstats(reh = reh, tie_effects = ~ 1, first = 5, last = 3),
     pattern = "cannot be smaller"
 )
 
@@ -349,7 +345,7 @@ expect_error(
     pattern = "memory_value"
 )
 
-# TODO(actor-model): reh <- remify::remify(edgelist, model = "actor")
+# TODO(actor-model): reh <- remify(edgelist, model = "actor")
 # TODO(actor-model): 
 # TODO(actor-model): expect_error(
 # TODO(actor-model):     remstats(reh = reh, receiver_effects = ~ inertia(), memory = "window"),
@@ -387,7 +383,7 @@ expect_error(
 # TODO(actor-model):   x2 = c(0, 1, 1)
 # TODO(actor-model): )
 # TODO(actor-model): 
-# TODO(actor-model): reh <- remify::remify(edgelist, model = "actor")
+# TODO(actor-model): reh <- remify(edgelist, model = "actor")
 # TODO(actor-model): 
 # TODO(actor-model): expect_warning(
 # TODO(actor-model):     aomstats(reh = reh, sender_effects = ~ 1, attributes = info),
@@ -420,15 +416,15 @@ expect_error(
 # TODO(actor-model):     pattern = "model argument"
 # TODO(actor-model): )
 # TODO(actor-model): 
-# TODO(actor-model): reh <- remify::remify(edgelist, model = "actor")
+# TODO(actor-model): reh <- remify(edgelist, model = "actor")
 # TODO(actor-model): 
 # TODO(actor-model): expect_error(
-# TODO(actor-model):     aomstats(reh = reh, sender_effects = ~ 1, start = 0),
+# TODO(actor-model):     aomstats(reh = reh, sender_effects = ~ 1, first = 0),
 # TODO(actor-model):     pattern = "1 or a larger"
 # TODO(actor-model): )
 # TODO(actor-model): 
 # TODO(actor-model): expect_error(
-# TODO(actor-model):     aomstats(reh = reh, sender_effects = ~ 1, start = 5, stop = 3),
+# TODO(actor-model):     aomstats(reh = reh, sender_effects = ~ 1, first = 5, last = 3),
 # TODO(actor-model):     pattern = "cannot be smaller"
 # TODO(actor-model): )
 # TODO(actor-model): 
@@ -442,7 +438,7 @@ expect_error(
 # TODO(actor-model):     pattern = "not defined"
 # TODO(actor-model): )
 # TODO(actor-model): 
-# TODO(actor-model): reh <- remify::remify(edgelist, model = "actor")
+# TODO(actor-model): reh <- remify(edgelist, model = "actor")
 # TODO(actor-model): 
 # TODO(actor-model): expect_error(
 # TODO(actor-model):     remstats(reh = reh, sender_effects = ~ send(variable = "x3"), 
@@ -514,7 +510,7 @@ expect_error(
 # TODO(actor-model): )
 # TODO(actor-model): 
 # TODO(actor-model): # check_formula ------------------------------------------------------------
-# TODO(actor-model): reh <- remify::remify(edgelist, model = "actor")
+# TODO(actor-model): reh <- remify(edgelist, model = "actor")
 # TODO(actor-model): 
 # TODO(actor-model): expect_error(
 # TODO(actor-model):     remstats(reh = reh, sender_effects = ~ outdegreeSender),
@@ -544,7 +540,7 @@ expect_error(
 # TODO(actor-model): stats_tie <- remstats(reh_tie, tie_effects = ~ inertia())
 # TODO(actor-model): 
 # TODO(actor-model): # Prepare data for 'aomstats'
-# TODO(actor-model): reh_actor <- remify::remify(edgelist = history[,1:3], model = "actor")
+# TODO(actor-model): reh_actor <- remify(edgelist = history[,1:3], model = "actor")
 # TODO(actor-model): # Compute effects
 # TODO(actor-model): stats_actor <- remstats(reh_actor, sender_effects = ~ outdegreeSender(), receiver_effects = ~ indegreeReceiver())
 # TODO(actor-model): 

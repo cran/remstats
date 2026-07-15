@@ -399,13 +399,13 @@ prepare_tomstats <- function(
   # Check correct specification effects
   if (!reh$meta$directed) {
     if (!all(effectNames %in% tie_effects(directed = FALSE))) {
-      stop("Attempting to request effects that are not (yet) defined for undirected events")
+      stop("Attempting to request effects that are not defined for undirected events")
     }
   }
 
   if (reh$meta$directed) {
     if (!all(effectNames %in% tie_effects(directed = TRUE))) {
-      stop("Attempting to request effects that are not (yet) defined for directed events")
+      stop("Attempting to request effects that are not defined for directed events")
     }
   }
 
@@ -1321,13 +1321,27 @@ process_covariate <- function(
         # Return: matrix (actor1, actor2, time, value)
         parse_tie(x, reh, attr_dyads)
       } else if (effect == "event") {
-        if (NROW(x$x) != nrow(edgelist) & NROW(x$x) != NROW(unique(edgelist[, 1]))) {
-          stop("Length of vector 'x' in event() does not match number of events in edgelist")
-        }
-        if (!is.numeric(x$x)) {
-          x$x <- (as.numeric(factor(x$x)) - 1)
-        }
-        as.matrix(x$x)
+      	if (NROW(x$x) != nrow(edgelist) & NROW(x$x) != NROW(unique(edgelist[, 1]))) {
+      		stop("Length of vector 'x' in event() does not match number of events in edgelist")
+      	}
+      	if (!is.numeric(x$x)) {
+      		x$x <- (as.numeric(factor(x$x)) - 1)
+      	}
+      	# Aggregate to unique time points if needed
+      	times <- edgelist[, 1]
+      	M <- length(unique(times))
+      	if (NROW(x$x) > M) {
+      		# Check for differing values within simultaneous events
+      		vals_by_time <- split(x$x, times)
+      		differs <- vapply(vals_by_time, function(v) length(unique(v)) > 1L, logical(1))
+      		if (any(differs)) {
+      			warning("Simultaneous events with different values for '", 
+      							x$variable, "' detected. Values are averaged per time point.",
+      							call. = FALSE)
+      		}
+      		x$x <- vapply(vals_by_time, mean, numeric(1))
+      	}
+      	as.matrix(x$x)
       } else if (effect == "FEtype") {
         as.matrix(x$typeID)
       } 
@@ -1815,16 +1829,16 @@ prepare_subset <- function(start, stop, edgelist, method, model) {
   }
   stop <- stop - 1
   if (stop < start) {
-    stop("The 'stop' value cannot be smaller than the 'start' value.")
+    stop("The 'first' value cannot be smaller than the 'last' value.")
   }
   if (method == "pe") {
     if (stop > nrow(edgelist)) {
-      stop("The 'stop' value cannot be larger than the number of events in 'reh'.")
+      stop("The 'first' value cannot be larger than the number of events in 'reh'.")
     }
   }
   if (method == "pt") {
     if (stop > NROW(unique(edgelist[, 1]))) {
-      stop("The 'stop' value cannot be larger than the number of unique time points in 'reh'.")
+      stop("The 'first' value cannot be larger than the number of unique time points in 'reh'.")
     }
   }
   if (model == "receiver" & method == "pt") {

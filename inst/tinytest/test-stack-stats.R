@@ -8,23 +8,24 @@ data(info,    package = "remstats")
 colnames(history)[colnames(history) == "setting"] <- "type"
 history_sub <- history[1:40, ]
 
-effects <- ~ inertia(consider_type = FALSE) +
+effects <- ~ inertia(consider_type = "interact") + 
                indegreeSender(consider_type = FALSE) +
                outdegreeSender(consider_type = FALSE)
 
 # ---------------------------------------------------------------------------
 # SECTION 1: Interval timing, active riskset
 # ---------------------------------------------------------------------------
-reh_int <- remify::remify(edgelist = history_sub, model = "tie",
-                            riskset = "active", extend_riskset_by_type = TRUE)
+reh_int <- remify(edgelist = history_sub, model = "tie",
+                            riskset = "active", extend_riskset_by_type = FALSE)
 
-ts_int <- remstats::tomstats(effects, reh = reh_int,
+ts_int <- tomstats(effects, reh = reh_int,
                                attr_actors = info,
                                memory = "decay", memory_value = 1000,
-                               start = 2, stop = 30,
+                               first = 2, last = 30,
                                sampling = FALSE)
+dimnames(ts_int)[[3]]
 
-stacked_int <- remstats::stack_stats(ts_int, reh_int)
+stacked_int <- stack_stats(ts_int, reh_int)
 
 # Return structure
 expect_true(is.list(stacked_int),
@@ -46,10 +47,11 @@ expect_equal(E_int, dim(ts_int)[1],
   info = "interval: E matches number of time points")
 
 # Column names
-expect_true(all(c("event", "obs", "dyad", "log_interevent") %in%
+expect_true(all(c("time_index", "obs", "dyad", "log_interevent") %in%
                   colnames(df_int)),
   info = "interval: required columns present")
-expect_true(all(c("baseline", "inertia", "indegreeSender", "outdegreeSender") %in%
+expect_true(all(c("baseline", "inertia.social", "inertia.work",
+									"indegreeSender", "outdegreeSender") %in%
                   colnames(df_int)),
   info = "interval: statistic columns present")
 
@@ -70,7 +72,7 @@ expect_equal(df_int$dyad, rep(seq_len(D_int), E_int),
   info = "interval: dyad index cycles correctly")
 
 # Event index: each event block has the correct event number
-expect_equal(df_int$event, rep(seq_len(E_int), each = D_int),
+expect_equal(df_int$time_index, 1+rep(seq_len(E_int), each = D_int),
   info = "interval: event index correct")
 
 # Offset: log_interevent matches reh interevent times
@@ -91,16 +93,16 @@ expect_equal(stacked_int$subset, c(2L, 30L),
 # ---------------------------------------------------------------------------
 # SECTION 2: Ordinal timing, active riskset
 # ---------------------------------------------------------------------------
-reh_ord <- remify::remify(edgelist = history_sub, model = "tie",
+reh_ord <- remify(edgelist = history_sub, model = "tie",
                             riskset = "active", ordinal = TRUE, extend_riskset_by_type = TRUE)
 
-ts_ord <- remstats::tomstats(effects, reh = reh_ord,
+ts_ord <- tomstats(effects, reh = reh_ord,
                                attr_actors = info,
                                memory = "decay", memory_value = 1000,
-                               start = 2, stop = 30,
+                               first = 2, last = 30,
                                sampling = FALSE)
 
-stacked_ord <- remstats::stack_stats(ts_ord, reh_ord)
+stacked_ord <- stack_stats(ts_ord, reh_ord)
 df_ord <- stacked_ord$remstats_stack
 
 # ordinal flag
@@ -125,16 +127,16 @@ expect_true(all(df_ord$obs %in% c(0L, 1L)),
 # ---------------------------------------------------------------------------
 # SECTION 3: Interval timing, full riskset
 # ---------------------------------------------------------------------------
-reh_full <- remify::remify(edgelist = history_sub, model = "tie",
+reh_full <- remify(edgelist = history_sub, model = "tie",
                              riskset = "full", extend_riskset_by_type = TRUE)
 
-ts_full <- remstats::tomstats(effects, reh = reh_full,
+ts_full <- tomstats(effects, reh = reh_full,
                                 attr_actors = info,
                                 memory = "decay", memory_value = 1000,
-                                start = 2, stop = 30,
+                                first = 2, last = 30,
                                 sampling = FALSE)
 
-stacked_full <- remstats::stack_stats(ts_full, reh_full)
+stacked_full <- stack_stats(ts_full, reh_full)
 df_full <- stacked_full$remstats_stack
 
 expect_equal(stacked_full$D, dim(ts_full)[2],
@@ -151,13 +153,13 @@ expect_true("log_interevent" %in% colnames(df_full),
 # ---------------------------------------------------------------------------
 # SECTION 4: start/stop subsetting respected
 # ---------------------------------------------------------------------------
-ts_sub <- remstats::tomstats(effects, reh = reh_int,
+ts_sub <- tomstats(effects, reh = reh_int,
                                attr_actors = info,
                                memory = "decay", memory_value = 1000,
-                               start = 5, stop = 20,
+                               first = 5, last = 20,
                                sampling = FALSE)
 
-stacked_sub <- remstats::stack_stats(ts_sub, reh_int)
+stacked_sub <- stack_stats(ts_sub, reh_int)
 
 expect_equal(stacked_sub$subset, c(5L, 20L),
   info = "subset: stored correctly")
@@ -174,13 +176,13 @@ expect_equal(sum(stacked_sub$remstats_stack$obs), stacked_sub$E,
 # ---------------------------------------------------------------------------
 samp_num <- 5L
 
-ts_samp <- remstats::tomstats(effects, reh = reh_int,
+ts_samp <- tomstats(effects, reh = reh_int,
                                 attr_actors = info,
                                 memory = "decay", memory_value = 1000,
-                                start = 2, stop = 30,
+                                first = 2, last = 30,
                                 sampling = TRUE, samp_num = samp_num, seed = 1L)
 
-stacked_samp <- remstats::stack_stats(ts_samp, reh_int)
+stacked_samp <- stack_stats(ts_samp, reh_int)
 df_samp <- stacked_samp$remstats_stack
 
 # Return structure
@@ -199,10 +201,11 @@ expect_equal(stacked_samp$E, dim(ts_samp)[1],
   info = "sampled interval: E matches stats rows")
 
 # Column names
-expect_true(all(c("event", "obs", "dyad", "weight", "log_interevent") %in%
+expect_true(all(c("time_index", "obs", "dyad", "weight", "log_interevent") %in%
                   colnames(df_samp)),
   info = "sampled interval: required columns present")
-expect_true(all(c("inertia", "indegreeSender", "outdegreeSender") %in%
+expect_true(all(c("inertia.social", "inertia.work", "indegreeSender",
+									"outdegreeSender") %in%
                   colnames(df_samp)),
   info = "sampled interval: statistic columns present")
 
@@ -240,13 +243,13 @@ expect_equal(stacked_samp$subset, c(2L, 30L),
 # ---------------------------------------------------------------------------
 # SECTION 6: Sampled tomstats — ordinal
 # ---------------------------------------------------------------------------
-ts_samp_ord <- remstats::tomstats(effects, reh = reh_ord,
+ts_samp_ord <- tomstats(effects, reh = reh_ord,
                                     attr_actors = info,
                                     memory = "decay", memory_value = 1000,
-                                    start = 2, stop = 30,
+                                    first = 2, last = 30,
                                     sampling = TRUE, samp_num = samp_num, seed = 1L)
 
-stacked_samp_ord <- remstats::stack_stats(ts_samp_ord, reh_ord)
+stacked_samp_ord <- stack_stats(ts_samp_ord, reh_ord)
 df_samp_ord <- stacked_samp_ord$remstats_stack
 
 # ordinal flag

@@ -5,48 +5,42 @@
 \title{tomstats}
 \usage{
 tomstats(
-  effects,
+  tie_effects,
   reh,
-  attr_actors = NULL,
-  attr_dyads = NULL,
   memory = c("full", "window", "decay", "interval"),
   memory_value = NA,
-  start = 2,
-  stop = Inf,
+  first = 2,
+  last = Inf,
   display_progress = FALSE,
   sampling = FALSE,
-  samp_num = NULL,
-  seed = NULL
+  samp_num = 10L,
+  seed = NULL,
+  attr_actors = NULL,
+  attr_dyads = NULL
 )
 }
 \arguments{
-\item{effects}{an object of class \code{"\link[stats]{formula}"} (or one
-that can be coerced to that class): a symbolic description of the effects in
+\item{tie_effects}{an object of class \code{"\link[stats]{formula}"} (or one
+that can be coerced to that class): a symbolic description of the tie_effects in
 the model for which statistics are computed, see 'Details' for the available
 effects and their corresponding statistics}
 
-\item{reh}{an object of class \code{"\link[remify]{remify}"} characterizing 
-the relational event history.}
-
-\item{attr_actors}{optionally, an object of class
-\code{"\link[base]{data.frame}"} that contains exogenous attributes for 
-actors (see Details).}
-
-\item{attr_dyads}{optionally, an object of class \code{data.frame} or 
-\code{matrix} containing attribute information for dyads (see Details).}
+\item{reh}{an object of class \code{"\link[remify]{remify}"} characterizing
+the relational event history. May also be a \code{remify_durem} object for
+duration relational event models.}
 
 \item{memory}{The memory to be used. See `Details'.}
 
-\item{memory_value}{Numeric value indicating the memory parameter. Default 
+\item{memory_value}{Numeric value indicating the memory parameter. Default
 is \code{NA}, which is only valid for \code{memory = "full"} (no memory
 parameter required). See `Details'.}
 
-\item{start}{an optional integer value, specifying the index of the first
-time or event in the relational event history for which statistics must be 
+\item{first}{an optional integer value, specifying the index of the first
+unique time point event in the relational event history for which statistics must be 
 computed (see 'Details'). Default is \code{2}: the first event has no history and is used only to initialize statistics, not to fit the model.}
 
-\item{stop}{an optional integer value, specifying the index of the last
-time or event in the relational event history for which statistics must be 
+\item{last}{an optional integer value, specifying the index of the last
+unique time point in the relational event history for which statistics must be 
 computed (see 'Details')}
 
 \item{display_progress}{should a progress bar for the computation of the
@@ -62,6 +56,13 @@ active risk set. Ignored when \code{sampling = FALSE}.}
 \item{seed}{Optional integer. Random seed used for dyad sampling. Setting
 this ensures reproducible sampling across calls. If \code{NULL}, the
 current RNG state is used.}
+
+\item{attr_actors}{optionally, an object of class
+\code{"\link[base]{data.frame}"} that contains exogenous attributes for
+actors (see Details).}
+
+\item{attr_dyads}{optionally, an object of class \code{data.frame} or
+\code{matrix} containing attribute information for dyads (see Details).}
 }
 \value{
 An object of class 'tomstats'. Array with the computed statistics,
@@ -87,9 +88,9 @@ with the tie-oriented relational event model.
 The statistics to be computed are defined symbolically and should be
 supplied to the \code{effects} argument in the form \code{~ effects}. The
 terms are separated by + operators. For example:
-\code{effects = ~ inertia() + otp()}. Interactions between two effects
+\code{tie_effects = ~ inertia() + otp()}. Interactions between two effects
 can be included with * operators. For example:
-\code{effects = ~ inertia()*otp()}. A list of available effects can be
+\code{tie_effects = ~ inertia()*otp()}. A list of available effects can be
 obtained with \code{\link{tie_effects}()}.
 
 The majority of the statistics can be scaled in some way, see
@@ -107,31 +108,6 @@ undirected events (see the documentation of the statistics). Note that
 undirected events are only available for the tie-oriented model.
 }
 
-\section{attr_actors}{
-
-For the computation of the \emph{exogenous} statistics an attributes object
-with the exogenous covariate information has to be supplied to the
-\code{attr_actors} argument in either \code{remstats()} or in the separate
-effect functions supplied to the \code{..._effects} arguments (e.g., see
-\code{\link{send}}). This \code{attr_actors} object should be constructed as
-follows: A dataframe with rows referring to the attribute value of actor
-\emph{i} at timepoint \emph{t}. A `name` column is required that contains the
-actor name (corresponding to the actor names in the relational event
-history). A `time` column is required that contains the time when attributes
-change (set to zero if none of the attributes vary over time). Subsequent
-columns contain the attributes that are called in the specifications of
-exogenous statistics (column name corresponding to the string supplied to
-the \code{variable} argument in the effect function). Note that the
-procedure for the exogenous effects `tie' and `event' deviates from this,
-here the exogenous covariate information has to be specified in a different
-way, see \code{\link{tie}} and \code{\link{event}}.
-}
-
-\section{attr_dyads}{
-
-For the computation of the \emph{dyad exogenous} statistics with \code{tie()}, an attributes object with the exogenous covariates information per dyad has to be supplied. This is a \code{data.frame} or \code{matrix} containing attribute information for dyads. If \code{attr_dyads} is a \code{data.frame}, the first two columns should represent "actor1" and "actor2" (for directed events, "actor1" corresponds to the sender, and "actor2" corresponds to the receiver). Additional columns can represent dyads' exogenous attributes. If attributes vary over time, include a column named "time". If \code{attr_dyads} is a \code{matrix}, the rows correspond to "actor1", columns to "actor2", and cells contain dyads' exogenous attributes.
-}
-
 \section{Memory}{
 
 The default `memory` setting is `"full"`, which implies that at each time
@@ -144,7 +120,7 @@ Mulders & Leenders, 2019). This length of this time window is set by the
 100 time units ago are included in the computation of the statistics.
 A third option is to set `memory` to `"interval"`. In this case, the past
 event history within a given time interval is considered. For example, when
-`"memory_value" = c(50, 100)` and `memory = "window"`, at time point $t$
+`"memory_value" = c(50, 100)` and `memory = "interval"`, at time point $t$
 only the past events that happened between 50 and 100 time units ago are
 included in the computation of the statistics. Finally, the fourth option is
 to set `memory` to `"decay"`. In this case, the weight of the past event in
@@ -162,28 +138,32 @@ that follow logically from their definition (e.g., the recenyContinue
 statistic does depend on time since the event and not on event weights).
 }
 
-\section{Subset the event history using 'start' and 'stop'}{
+\section{Subset the event history using 'first' and 'last'}{
 
 It is possible to compute statistics for a segment of the relational event 
 sequence, based on the entire event history. This is done by specifying the 
-'start' and 'stop' values as the indices for the first and last event times 
-for which statistics are needed. For instance, setting 'start = 5' and 'stop 
+'first' and 'last' values as the indices for the first and last event times 
+for which statistics are needed. For instance, setting 'first = 5' and 'last 
 = 5' calculates statistics for the 5th event in the relational event 
-sequence, considering events 1-4 in the history. Note that in cases of 
-simultaneous events with the 'method' set to 'pt' (per timepoint), 'start' 
-and 'stop' should correspond to the indices of the first and last 
+sequence. Note that in cases of simultaneous events, 'first' and 'last'
+correspond to the indices of the first and last unique event timepoints.
 \emph{unique} event timepoints for which statistics are needed. For example, 
-if 'start = 5' and 'stop = 5', statistics are computed for the 5th unique 
+if 'first = 5' and 'last = 5', statistics are computed for the 5th unique 
 timepoint in the relational event sequence, considering all events occurring 
 at unique timepoints 1-4.
 }
 
-\section{Adjacency matrix}{
+\examples{
+library(remstats)
 
-Optionally, a previously computed adjacency matrix can be supplied. Note
-that the endogenous statistics will be computed based on this adjacency
-matrix. Hence, supplying a previously computed adjacency matrix can reduce
-computation time but the user should be absolutely sure the adjacency matrix
-is accurate.
+# Tie-oriented model
+eff <- ~ inertia():send("extraversion", attr_actors = info) + otp()
+reh_tie <- remify::remify(edgelist = history, model = "tie")
+remstats(reh = reh_tie, tie_effects = eff)
+
+# Tie-oriented model with case control sampling
+eff <- ~ inertia():send("extraversion", attr_actors = info) + otp()
+reh_tie <- remify::remify(edgelist = history, model = "tie")
+remstats(reh = reh_tie, tie_effects = eff, sampling = TRUE, samp_num = 5L)
+
 }
-

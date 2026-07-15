@@ -8,18 +8,19 @@ aomstats(
   reh,
   sender_effects = NULL,
   receiver_effects = NULL,
-  attr_actors = NULL,
-  attr_dyads = NULL,
   memory = c("full", "window", "decay", "interval"),
   memory_value = NA,
-  start = 2,
-  stop = Inf,
-  display_progress = FALSE
+  first = 2,
+  last = Inf,
+  display_progress = FALSE,
+  attr_actors = NULL,
+  attr_dyads = NULL
 )
 }
 \arguments{
-\item{reh}{an object of class \code{"\link[remify]{remify}"} characterizing 
-the relational event history.}
+\item{reh}{an object of class \code{"\link[remify]{remify}"} characterizing
+the relational event history. May also be a \code{remify_durem} object for
+duration relational event models.}
 
 \item{sender_effects}{an object of class \code{"\link[stats]{formula}"} (or
 one that can be coerced to that class): a symbolic description of the
@@ -31,29 +32,29 @@ which statistics are computed, see `Details'}
 effects in the receiver choice step of model for which statistics are
 computed, see `Details'}
 
-\item{attr_actors}{optionally, an object of class
-\code{"\link[base]{data.frame}"} that contains exogenous attributes for 
-actors (see Details).}
-
-\item{attr_dyads}{optionally, an object of class \code{data.frame} or 
-\code{matrix} containing attribute information for dyads (see Details).}
-
 \item{memory}{The memory to be used. See `Details'.}
 
-\item{memory_value}{Numeric value indicating the memory parameter. Default 
+\item{memory_value}{Numeric value indicating the memory parameter. Default
 is \code{NA}, which is only valid for \code{memory = "full"} (no memory
 parameter required). See `Details'.}
 
-\item{start}{an optional integer value, specifying the index of the first
-time or event in the relational event history for which statistics must be 
+\item{first}{an optional integer value, specifying the index of the first
+unique time point event in the relational event history for which statistics must be 
 computed (see 'Details'). Default is \code{2}: the first event has no history and is used only to initialize statistics, not to fit the model.}
 
-\item{stop}{an optional integer value, specifying the index of the last
-time or event in the relational event history for which statistics must be 
+\item{last}{an optional integer value, specifying the index of the last
+unique time point in the relational event history for which statistics must be 
 computed (see 'Details')}
 
 \item{display_progress}{should a progress bar for the computation of the
 endogenous statistics be shown (TRUE) or not (FALSE)?}
+
+\item{attr_actors}{optionally, an object of class
+\code{"\link[base]{data.frame}"} that contains exogenous attributes for
+actors (see Details).}
+
+\item{attr_dyads}{optionally, an object of class \code{data.frame} or
+\code{matrix} containing attribute information for dyads (see Details).}
 }
 \value{
 An object of class 'aomstats'. List with in the first element the
@@ -91,31 +92,6 @@ the documentation of the \code{scaling} argument in the separate effect
 functions for more information on this.
 }
 
-\section{attr_actors}{
-
-For the computation of the \emph{exogenous} statistics an attributes object
-with the exogenous covariate information has to be supplied to the
-\code{attr_actors} argument in either \code{remstats()} or in the separate
-effect functions supplied to the \code{..._effects} arguments (e.g., see
-\code{\link{send}}). This \code{attr_actors} object should be constructed as
-follows: A dataframe with rows referring to the attribute value of actor
-\emph{i} at timepoint \emph{t}. A `name` column is required that contains the
-actor name (corresponding to the actor names in the relational event
-history). A `time` column is required that contains the time when attributes
-change (set to zero if none of the attributes vary over time). Subsequent
-columns contain the attributes that are called in the specifications of
-exogenous statistics (column name corresponding to the string supplied to
-the \code{variable} argument in the effect function). Note that the
-procedure for the exogenous effects `tie' and `event' deviates from this,
-here the exogenous covariate information has to be specified in a different
-way, see \code{\link{tie}} and \code{\link{event}}.
-}
-
-\section{attr_dyads}{
-  
-For the computation of the \emph{dyad exogenous} statistics with \code{tie()}, an attributes object with the exogenous covariates information per dyad has to be supplied. This is a \code{data.frame} or \code{matrix} containing attribute information for dyads. If \code{attr_dyads} is a \code{data.frame}, the first two columns should represent "actor1" and "actor2" (for directed events, "actor1" corresponds to the sender, and "actor2" corresponds to the receiver). Additional columns can represent dyads' exogenous attributes. If attributes vary over time, include a column named "time". If \code{attr_dyads} is a \code{matrix}, the rows correspond to "actor1", columns to "actor2", and cells contain dyads' exogenous attributes.
-}
-
 \section{Memory}{
 
 The default `memory` setting is `"full"`, which implies that at each time
@@ -128,7 +104,7 @@ Mulders & Leenders, 2019). This length of this time window is set by the
 100 time units ago are included in the computation of the statistics.
 A third option is to set `memory` to `"interval"`. In this case, the past
 event history within a given time interval is considered. For example, when
-`"memory_value" = c(50, 100)` and `memory = "window"`, at time point $t$
+`"memory_value" = c(50, 100)` and `memory = "interval"`, at time point $t$
 only the past events that happened between 50 and 100 time units ago are
 included in the computation of the statistics. Finally, the fourth option is
 to set `memory` to `"decay"`. In this case, the weight of the past event in
@@ -150,8 +126,8 @@ statistic does depend on time since the event and not on event weights).
 
 Optionally, statistics can be computed for a slice of the relational event
 sequence - but based on the entire history. This is achieved by setting the
-start and stop values equal to the index of the first and last event for
-which statistics are requested. For example, start = 5 and stop = 5 computes
+first and last values equal to the index of the first and last event for
+which statistics are requested. For example, first = 5 and last = 5 computes
 the statistics for only the 5th event in the relational event sequence,
 based on the history that consists of events 1-4.
 }
@@ -183,4 +159,9 @@ aomstats(
 Stadtfeld, C., & Block, P. (2017). Interactions, actors, and
 time: Dynamic network actor models for relational events. Sociological
 Science, 4, 318–352. \doi{10.15195/v4.a14}
+
+Meijerink-Bosman, M., Back, M., Geukes, K., Leenders, R., & Mulder, J.
+(2023). Discovering trends of social interaction behavior over time: An
+introduction to relational event modeling: Trends of social interaction.
+Behavior Research Methods, 55(3), 997-1023. \doi{10.3758/s13428-022-01821-8}
 }
